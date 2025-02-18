@@ -5,7 +5,7 @@ using UnityEngine.Rendering;
 
 public class CustomRenderPipeline : RenderPipeline
 {
-    private CameraRender _cameraRender = new CameraRender();
+    private CameraRenderer _cameraRender = new CameraRenderer();
     
     
     

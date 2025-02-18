@@ -4,10 +4,10 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.Rendering;
 
-public class CameraRender
+public partial class CameraRenderer
 {
-    ScriptableRenderContext context;
-    Camera camera;
+    public ScriptableRenderContext context;
+    public Camera camera;
 
     private const string _bufferName = "Render Camera";
 
@@ -16,6 +16,11 @@ public class CameraRender
         name = _bufferName
     };
     private CullingResults _cullingResults;
+    
+    private static ShaderTagId _unlitShaderTagId = new ShaderTagId("SRPDefaultUnlit");
+
+   
+    
     
     /// <summary>
     /// Draw all geometry that camera can see  
@@ -30,6 +35,7 @@ public class CameraRender
         
         Setup();
         DrawVisibleGeometry();
+        DrawUnsupportedShaders();
         Submit();
     }
     
@@ -46,8 +52,28 @@ public class CameraRender
     }
     void DrawVisibleGeometry()
     {
+        var sortSettings = new SortingSettings(camera)
+        {
+            criteria = SortingCriteria.CommonOpaque 
+        };
+        var drawingSettings = new DrawingSettings(_unlitShaderTagId, sortSettings);
+        var filteringSettings = new FilteringSettings(RenderQueueRange.opaque);
+        
+        //Draw opaque first, then the skybox, finally transparent things
+        context.DrawRenderers(_cullingResults, ref drawingSettings, ref filteringSettings);
+
         context.DrawSkybox(camera);
+        
+        sortSettings.criteria = SortingCriteria.CommonTransparent;
+        drawingSettings.sortingSettings = sortSettings;
+        filteringSettings.renderQueueRange = RenderQueueRange.transparent;
+        
+        context.DrawRenderers(_cullingResults, ref drawingSettings, ref filteringSettings);
+        
     }
+
+
+
 
     /// <summary>
     /// Submit the actual rendering
