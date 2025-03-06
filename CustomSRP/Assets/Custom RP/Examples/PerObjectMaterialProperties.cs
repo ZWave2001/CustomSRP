@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 
 namespace Custom_RP.Examples
 {
@@ -9,6 +10,17 @@ namespace Custom_RP.Examples
 
         [SerializeField]
         private Color baseColor = Color.white;
-        
+
+        private static MaterialPropertyBlock block;
+
+        private void OnValidate()
+        {
+            if (block == null)
+            {
+                block = new MaterialPropertyBlock();
+            }
+            block.SetColor(baseColorId, baseColor);
+            GetComponent<Renderer>().SetPropertyBlock(block);
+        }
     }
 }
