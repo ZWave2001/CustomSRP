@@ -24,7 +24,7 @@ public partial class CameraRenderer
     /// <summary>
     /// Draw all geometry that camera can see  
     /// </summary>
-    public void Render(ScriptableRenderContext context, Camera camera)
+    public void Render(ScriptableRenderContext context, Camera camera, bool useDynamicBatching, bool useGPUInstancing)
     {
         this.context = context;
         this.camera = camera;
@@ -36,7 +36,7 @@ public partial class CameraRenderer
             return;
 
         Setup();
-        DrawVisibleGeometry();
+        DrawVisibleGeometry(useDynamicBatching, useGPUInstancing);
         DrawUnsupportedShaders();
         DrawGizmos();
         Submit();
@@ -55,13 +55,17 @@ public partial class CameraRenderer
         ExecuteBuffer();
     }
 
-    void DrawVisibleGeometry()
+    void DrawVisibleGeometry(bool useDynamicBatching, bool useGPUInstancing)
     {
         var sortSettings = new SortingSettings(camera)
         {
             criteria = SortingCriteria.CommonOpaque
         };
-        var drawingSettings = new DrawingSettings(_unlitShaderTagId, sortSettings);
+        var drawingSettings = new DrawingSettings(_unlitShaderTagId, sortSettings)
+        {
+            enableDynamicBatching = useDynamicBatching,
+            enableInstancing = useGPUInstancing,
+        };
         var filteringSettings = new FilteringSettings(RenderQueueRange.opaque);
 
         //Draw opaque first, then the skybox, finally transparent things
