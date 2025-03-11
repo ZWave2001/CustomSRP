@@ -1,15 +1,20 @@
 ﻿using System;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace Custom_RP.Examples
 {
     [DisallowMultipleComponent]
     public class PerObjectMaterialProperties : MonoBehaviour
     {
-        static int baseColorId = Shader.PropertyToID("_BaseColor");
+        private static int _baseColorId = Shader.PropertyToID("_BaseColor");
+        private static int _cutoffId = Shader.PropertyToID("_Cutoff");
 
         [SerializeField]
-        private Color baseColor = Color.white;
+        private Color _baseColor = Color.white;
+
+        [SerializeField, Range(0, 1)]
+        private float _cutoff = 0.5f; 
 
         private static MaterialPropertyBlock block;
 
@@ -19,7 +24,9 @@ namespace Custom_RP.Examples
             {
                 block = new MaterialPropertyBlock();
             }
-            block.SetColor(baseColorId, baseColor);
+            block.SetColor(_baseColorId, _baseColor);
+            block.SetFloat(_cutoffId, _cutoff);
+            
             GetComponent<Renderer>().SetPropertyBlock(block);
         }
     }
