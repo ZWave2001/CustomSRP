@@ -18,9 +18,10 @@ public partial class CameraRenderer
 
     private CullingResults _cullingResults;
 
-    private static ShaderTagId _unlitShaderTagId = new ShaderTagId("SRPDefaultUnlit");
+    private static ShaderTagId _unlitShaderTagId = new ShaderTagId("SRPDefaultUnlit"),
+        _litShaderTagId = new ShaderTagId("CustomLit");
 
-
+    private Lighting _lighting = new();
     /// <summary>
     /// Draw all geometry that camera can see  
     /// </summary>
@@ -36,6 +37,7 @@ public partial class CameraRenderer
             return;
 
         Setup();
+        _lighting.Setup(context, _cullingResults);
         DrawVisibleGeometry(useDynamicBatching, useGPUInstancing);
         DrawUnsupportedShaders();
         DrawGizmos();
@@ -48,7 +50,6 @@ public partial class CameraRenderer
         context.SetupCameraProperties(camera);
         CameraClearFlags flags = camera.clearFlags;
         //Clear the earlier render target
-        //TODO: what will happen if remove this
         _buffer.ClearRenderTarget(flags <= CameraClearFlags.Depth, flags <= CameraClearFlags.Color, flags == CameraClearFlags.Color ? camera.backgroundColor.linear : Color.clear);
 
         _buffer.BeginSample(SampleName);
@@ -66,6 +67,8 @@ public partial class CameraRenderer
             enableDynamicBatching = useDynamicBatching,
             enableInstancing = useGPUInstancing,
         };
+        drawingSettings.SetShaderPassName(1, _litShaderTagId);
+        
         var filteringSettings = new FilteringSettings(RenderQueueRange.opaque);
 
         //Draw opaque first, then the skybox, finally transparent things
