@@ -4,6 +4,7 @@
 #include "../ShaderLibrary/Common.hlsl"
 #include "../ShaderLibrary/Surface.hlsl"
 #include "../ShaderLibrary/Light.hlsl"
+#include "../ShaderLibrary//BRDF.hlsl"
 #include "../ShaderLibrary/Lighting.hlsl"
 
 
@@ -20,6 +21,8 @@ UNITY_INSTANCING_BUFFER_START(UnityPerMaterial)
     UNITY_DEFINE_INSTANCED_PROP(float4, _BaseColor)
     UNITY_DEFINE_INSTANCED_PROP(float4, _BaseMap_ST)
     UNITY_DEFINE_INSTANCED_PROP(float, _Cutoff)
+    UNITY_DEFINE_INSTANCED_PROP(float, _Metallic)
+    UNITY_DEFINE_INSTANCED_PROP(float, _Smoothness)
 UNITY_INSTANCING_BUFFER_END(UnityPerMaterial)
 
 struct Attributes
@@ -63,12 +66,16 @@ float4 LitPassFragment(Varyings input) : SV_TARGET
     #if defined(_CLIPPING)
     clip(base.a - UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _Cutoff));
     #endif
-    
+
     Surface surface;
     surface.normal = normalize(input.normalWS);
     surface.color = base.rgb;
     surface.alpha = base.a;
-    
-    return float4(GetLighting(surface), surface.alpha);
+    surface.metallic = UNITY_ACCESS_INSTANCED_PROP(_UnityPerMaterial, _Metallic);
+    surface.smoothness = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterial, _Smoothness);
+
+    BRDF brdf = GetBRDF(surface);
+
+    return float4(GetLighting(surface, brdf), surface.alpha);
 }
 #endif
